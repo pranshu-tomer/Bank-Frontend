@@ -9,7 +9,7 @@ const AppContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL
 
     // const [doctors, setDoctors] = useState([])
-    // const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
+    const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
     // const [userData, setUserData] = useState(false)
     // const [accounts,setAccounts] = useState([])
     // const [transactions,setTransactions] = useState([])
@@ -50,7 +50,7 @@ const AppContextProvider = (props) => {
         // doctors, getDoctosData,
         // currencySymbol,
         backendUrl,
-        // token, setToken,
+        token, setToken,
         // userData, setUserData, loadUserProfileData,
         // accounts,setAccounts,
         // transactions,setTransactions,

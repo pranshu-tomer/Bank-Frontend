@@ -19,9 +19,7 @@ import { toast } from 'react-toastify';
 
 export default function Login() {
 
-  const { backendUrl } = useContext(AppContext)
-  // const backendUrl = import.meta.env.VITE_BACKEND_URL
-  // console.log(backendUrl)
+  const { backendUrl, token, setToken } = useContext(AppContext)
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +39,12 @@ export default function Login() {
     age: ''
   });
 
+  const [loginFormData, setLoginFormData] = useState({
+    crn: '',
+    password: '',
+    remember: false
+  });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSignupFormData(prev => ({
@@ -49,14 +53,43 @@ export default function Login() {
     }));
   };
 
+  const handleLoginInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginFormData(prev => ({
+      ...prev,
+      [name]: value,
+      remember: e.target.checked
+    }));
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    try{
+      const { data } = await axios.post(backendUrl + '/api/auth/login', 
+      { 
+        crn : loginFormData.crn,
+        password : loginFormData.password
+      })
+
+      if (data.success) {
+        toast.success("Welcome Back")
+        setIsLoading(false)
+        setToken(data.token)
+        localStorage.setItem('token',token)
+        // todo : remeber me
+      } else {
+        toast.error("Something went wrong !! Try Again Later")
+        setIsLoading(false)
+      }
+    } catch(e){
+      toast.error("Something Went wrong !!")
+      setIsLoading(false)
+    }
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   navigate('/dashboard');
+    // }, 1500);
   };
 
   const handleRegister = async (e) => {
@@ -78,7 +111,6 @@ export default function Login() {
         pincode: signupFormData.pincode,
         gender: signupFormData.gender,
         age: signupFormData.age
-        // signupFormData
       })
 
       if (data.success) {
@@ -94,10 +126,10 @@ export default function Login() {
       setIsLoading(false)
     }
 
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   navigate('/dashboard');
+    // }, 1500);
   };
 
   return (
@@ -133,13 +165,16 @@ export default function Login() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="crn">CRN Number</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="john@example.com"
+                      id="crn"
+                      type="text"
+                      placeholder="765XX97900"
                       required
                       className="h-11"
+                      name="crn"
+                      value={loginFormData.crn}
+                      onChange={handleLoginInputChange}
                     />
                   </div>
                   <div className="space-y-2">
@@ -151,6 +186,9 @@ export default function Login() {
                         placeholder="Enter your password"
                         required
                         className="h-11 pr-10"
+                        name="password"
+                        value={loginFormData.password}
+                        onChange={handleLoginInputChange}
                       />
                       <Button
                         type="button"
@@ -169,7 +207,7 @@ export default function Login() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <input type="checkbox" id="remember" className="rounded" />
+                      <input type="checkbox" id="remember" className="rounded" value={loginFormData.remember} name='remember' onChange={handleLoginInputChange}/>
                       <Label htmlFor="remember" className="text-sm">Remember me</Label>
                     </div>
                     <Button variant="link" className="px-0 text-blue-600">
