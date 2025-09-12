@@ -17,6 +17,8 @@ import axios from 'axios';
 import { AppContext } from '@/context/AppContext';
 import { toast } from 'react-toastify';
 
+
+// Forget Password
 export default function Login() {
 
   const { backendUrl, token, setToken } = useContext(AppContext)
@@ -76,7 +78,7 @@ export default function Login() {
         toast.success("Welcome Back")
         setIsLoading(false)
         setToken(data.token)
-        localStorage.setItem('token',token)
+        localStorage.setItem('token',data.token)
         // todo : remeber me
       } else {
         toast.error("Something went wrong !! Try Again Later")
@@ -86,10 +88,7 @@ export default function Login() {
       toast.error("Something Went wrong !!")
       setIsLoading(false)
     }
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   navigate('/dashboard');
-    // }, 1500);
+    navigate('/dashboard');
   };
 
   const handleRegister = async (e) => {

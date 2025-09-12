@@ -14,10 +14,11 @@ import {
   EyeOff
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const [showBalance, setShowBalance] = useState(true);
-
+  const navigate = useNavigate()
   const accounts = [
     { id: 1, name: 'Checking Account', balance: 12450.75, type: 'checking', number: '****1234' },
     { id: 2, name: 'Savings Account', balance: 25800.50, type: 'savings', number: '****5678' },
@@ -204,7 +205,7 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                <Button variant="outline" className="w-full mt-4">
+                <Button onClick={() => navigate('/transactions')} variant="outline" className="w-full mt-4">
                   View All Transactions
                 </Button>
               </CardContent>

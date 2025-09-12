@@ -11,6 +11,7 @@ import Transfer from './pages/Transfer';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import { ToastContainer } from 'react-toastify';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 
@@ -24,11 +25,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/transfer" element={<Transfer />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/accounts" element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
+          <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+          <Route path="/transfer" element={<ProtectedRoute><Transfer /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
