@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,11 +6,48 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Eye, EyeOff, Shield } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import axios from 'axios';
+import { AppContext } from '@/context/AppContext';
+import { toast } from 'react-toastify';
 
 export default function Login() {
+
+  const { backendUrl } = useContext(AppContext)
+  // const backendUrl = import.meta.env.VITE_BACKEND_URL
+  // console.log(backendUrl)
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const [signupFormData, setSignupFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    gender: '',
+    age: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSignupFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,7 +62,38 @@ export default function Login() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate registration process
+    
+    // todo
+    try{
+      const { data } = await axios.post(backendUrl + '/api/auth/register', 
+      { 
+        firstName: signupFormData.firstName,
+        lastName: signupFormData.lastName,
+        email: signupFormData.email,
+        phone: signupFormData.phone,
+        dob: signupFormData.dob,
+        street: signupFormData.street,
+        city: signupFormData.city,
+        state: signupFormData.state,
+        pincode: signupFormData.pincode,
+        gender: signupFormData.gender,
+        age: signupFormData.age
+        // signupFormData
+      })
+
+      if (data.success) {
+        toast.success("Check Your Mail for Login Credentials")
+        setIsLoading(false)
+      } else {
+        // toast.error("Something is wrong !!")
+        toast.error("Something went wrong !! Try Again Later")
+        setIsLoading(false)
+      }
+    } catch(e){
+      toast.error("Something Went wrong !!")
+      setIsLoading(false)
+    }
+
     setTimeout(() => {
       setIsLoading(false);
       navigate('/dashboard');
@@ -131,12 +199,16 @@ export default function Login() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 mt-3">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        placeholder="John"
+                        placeholder="Pranshu"
+                        name="firstName"
+                        type="text"
+                        value={signupFormData.firstName}
+                        onChange={handleInputChange}
                         required
                         className="h-11"
                       />
@@ -145,9 +217,12 @@ export default function Login() {
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        placeholder="Doe"
-                        required
+                        placeholder="Tomer"
                         className="h-11"
+                        name="lastName"
+                        type="text"
+                        value={signupFormData.lastName}
+                        onChange={handleInputChange}
                       />
                     </div>
                   </div>
@@ -156,47 +231,134 @@ export default function Login() {
                     <Input
                       id="registerEmail"
                       type="email"
-                      placeholder="john@example.com"
+                      placeholder="tomerXXXX@gmail.com"
                       required
                       className="h-11"
+                      name="email"
+                      value={signupFormData.email}
+                      onChange={handleInputChange}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="registerPassword">Password</Label>
-                    <div className="relative">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="number"
+                      placeholder="9026XXXX21"
+                      required
+                      className="h-11"
+                      name="phone"
+                      value={signupFormData.phone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="street">Address</Label>
+                    <Input
+                      id="street"
+                      type="text"
+                      placeholder="House Number 00, Gujaini"
+                      required
+                      className="h-11"
+                      name="street"
+                      value={signupFormData.street}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">City</Label>
                       <Input
-                        id="registerPassword"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Create a strong password"
+                        id="city"
+                        placeholder="Kanpur"
+                        name="city"
+                        type="text"
+                        value={signupFormData.city}
+                        onChange={handleInputChange}
                         required
-                        className="h-11 pr-10"
+                        className="h-11"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400" />
-                        )}
-                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input
+                        id="state"
+                        placeholder="Uttar Pradesh"
+                        className="h-11"
+                        name="state"
+                        type="text"
+                        value={signupFormData.state}
+                        onChange={handleInputChange}
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="terms" required className="rounded" />
-                    <Label htmlFor="terms" className="text-sm">
-                      I agree to the <Button variant="link" className="px-0 h-auto text-blue-600">Terms & Conditions</Button>
-                    </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="pincode">Pincode</Label>
+                      <Input
+                        id="pincode"
+                        placeholder="208022"
+                        name="pincode"
+                        type="number"
+                        value={signupFormData.pincode}
+                        onChange={handleInputChange}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dob">DOB</Label>
+                      <Input
+                        id="dob"
+                        placeholder="14-08-2003"
+                        className="h-11"
+                        name="dob"
+                        type="date"
+                        value={signupFormData.dob}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        placeholder="22"
+                        name="age"
+                        type="number"
+                        value={signupFormData.age}
+                        onChange={handleInputChange}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select
+                        value={signupFormData.gender ?? ""}
+                        onValueChange={(val) =>
+                          setSignupFormData(prev => ({ ...prev, gender: val }))
+                        }
+                        id="gender"
+                        name="gender"
+                      >
+                        <SelectTrigger className="h-11 w-full">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">MALE</SelectItem>
+                          <SelectItem value="FEMALE">FEMALE</SelectItem>
+                          <SelectItem value="OTHER">OTHER</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter>
                   <Button 
                     type="submit" 
-                    className="w-full h-11 bg-blue-600 hover:bg-blue-700"
+                    className="w-full h-11 bg-blue-600 hover:bg-blue-700 mt-4"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Creating Account...' : 'Create Account'}
