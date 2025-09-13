@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { AppContext } from "@/context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 /**
  * Simple Modal component
@@ -34,14 +36,13 @@ function Modal({ isOpen, onClose, title, children }) {
  * - accountTypes: array of { id, label, desc, openingFee, monthlyCharges, interest, extraInfo }
  * - onOpenAccount: function(accountId) called when user confirms
  */
-export default function AccountOpen({
-  onOpenAccount = (accountId) => { console.log("Open account:", accountId); },
-}) {
+export default function AccountOpen() {
   const [isOpen, setIsOpen] = useState(false);
   const [stage, setStage] = useState("list"); // "list" | "details"
   const [selectedId, setSelectedId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { accountOptions } = useContext(AppContext)
+  const { accountOptions,backendUrl,token } = useContext(AppContext)
 
   useEffect(() => {
     // reset when modal closed
@@ -58,10 +59,29 @@ export default function AccountOpen({
     setStage("details");
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!selectedId) return;
-    onOpenAccount(selectedId);
+    setIsLoading(true)
+    try{
+        const { data } = await axios.post(backendUrl + '/api/accounts/create',
+        {
+            type: selectedId
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+
+        if(data?.success){
+            toast.success("Account Created Successfully")
+        }else{
+            toast.error("Something Went Wrong ! Try Again Later")
+        }
+    }catch(e){
+        console.log(e)
+        toast.error("Somthing Went Wrong")   
+    }
     setIsOpen(false);
+    setIsLoading(false)
   }
 
   return (
@@ -147,8 +167,9 @@ export default function AccountOpen({
                 <button
                   className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
                   onClick={handleConfirm}
+                  disabled={isLoading}
                 >
-                  Confirm
+                  {isLoading ? 'Creating...' : 'Confirm'}
                 </button>
               </div>
             </div>

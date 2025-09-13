@@ -13,7 +13,8 @@ import {
   Calendar,
   DollarSign,
   Percent,
-  Building2
+  Building2,
+  CircleDollarSign
 } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { AppContext } from '@/context/AppContext';
@@ -24,8 +25,6 @@ export default function Accounts() {
 
   const [showBalances, setShowBalances] = useState(true);
   const { accounts } = useContext(AppContext)
-  const navigate = useNavigate()
-  const [isOpen, setIsOpen] = useState(false);
 
   // const accounts = [
   //   {
@@ -79,10 +78,10 @@ export default function Accounts() {
   // ];
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
-    }).format(Math.abs(amount));
+      currency: 'INR'
+    }).format(amount);
   };
 
   const formatDate = (dateString) => {
@@ -100,8 +99,8 @@ export default function Accounts() {
         return <div className={`${baseClasses} bg-blue-100 text-blue-600`}><Building2 className="h-6 w-6" /></div>;
       case 'savings':
         return <div className={`${baseClasses} bg-green-100 text-green-600`}><TrendingUp className="h-6 w-6" /></div>;
-      case 'credit':
-        return <div className={`${baseClasses} bg-purple-100 text-purple-600`}><CreditCard className="h-6 w-6" /></div>;
+      case 'current':
+        return <div className={`${baseClasses} bg-purple-100 text-purple-600`}><CircleDollarSign className="h-6 w-6" /></div>;
       default:
         return <div className={`${baseClasses} bg-gray-100 text-gray-600`}><CreditCard className="h-6 w-6" /></div>;
     }
@@ -128,47 +127,6 @@ export default function Accounts() {
               <span>{showBalances ? 'Hide' : 'Show'} Balances</span>
             </Button>
             <AccountOpen />
-            {/* <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsOpen(true)}>
-              <Plus className="h-4 w-4 mr-2"/>
-              Open New Account
-            </Button>
-            <Modal
-              isOpen={isOpen}
-              onClose={() => setIsOpen(false)}
-              title="Open New Account"
-            >
-              <p className="text-sm text-gray-600 mb-4">
-                Select the account type you want to open:
-              </p>
-
-              <ul className="space-y-2">
-                <li>Savings Account</li>
-                <li>Checking Account</li>
-                <li>Fixed Deposit</li>
-              </ul>
-
-              <div className="mt-4 flex justify-end gap-3">
-                <button
-                  className="px-4 py-2 rounded-md border border-gray-300"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                  onClick={() => {
-                    console.log("Confirm clicked");
-                    setIsOpen(false);
-                  }}
-                >
-                  Confirm
-                </button>
-              </div>
-            </Modal> */}
-            {/* <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Apply For Credit Card
-            </Button> */}
           </div>
         </div>
 
@@ -179,10 +137,10 @@ export default function Accounts() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    {getAccountIcon(account.accountType.toLowerCase())}
+                    {getAccountIcon(account.type ? account.type.toLowerCase() : "")}
                     <div>
-                      <CardTitle className="text-xl">{account.accountType}</CardTitle>
-                      <p className="text-sm text-gray-600 capitalize">{account.accountType.toLowerCase()} Account</p>
+                      <CardTitle className="text-xl">{account.type === 'CREDIT_CARD' ? 'CREDIT CARD' : account.type}</CardTitle>
+                      <p className="text-sm text-gray-600 capitalize">{account.type ? account.type.toLowerCase() : ""} Account</p>
                     </div>
                   </div>
                 </div>
@@ -195,23 +153,21 @@ export default function Accounts() {
                     <span className="text-sm font-medium text-gray-600">
                       Available Balance
                     </span>
-                    <span className="text-sm text-gray-500">****{account.accountNumber.slice(-4)}</span>
+                    <span className="text-sm text-gray-500">****{account.number ? account.number.slice(-4) : ""}</span>
                   </div>
                   <div className={`text-3xl font-bold ${
-                    account.type === 'credit'
-                      ? account.balance < 0 ? 'text-red-600' : 'text-green-600'
-                      : 'text-gray-900'
+                    account.balance < 0 ? 'text-red-600' : 'text-green-600'
                   }`}>
                     {showBalances ? formatCurrency(account.balance) : '••••••'}
                   </div>
                   
                   {/* Credit Card Specific Info */}
-                  {/* {account.type === 'credit' && (
+                  {account.type === 'CREDIT_CARD' && (
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Available Credit:</span>
                         <span className="font-medium">
-                          {showBalances ? formatCurrency(account.availableCredit) : '••••••'}
+                          {showBalances ? formatCurrency(account.creditLimit - account.creditUsed) : '••••••'}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
@@ -221,31 +177,43 @@ export default function Accounts() {
                         </span>
                       </div>
                       <Progress 
-                        value={(Math.abs(account.balance) / account.creditLimit) * 100} 
+                        value={(Math.abs(account.creditUsed) / account.creditLimit) * 100} 
                         className="mt-2"
                       />
                       <div className="flex justify-between text-sm mt-2">
-                        <span className="text-gray-600">Minimum Payment:</span>
+                        <span className="text-gray-600">Due Payment:</span>
                         <span className="font-medium text-red-600">
-                          {formatCurrency(account.minimumPayment)} due {formatDate(account.dueDate)}
+                          {formatCurrency(account.creditUsed)} due {formatDate((new Date((new Date()).getFullYear(), (new Date()).getMonth() + 1, 1)).toISOString().split("T")[0])}
                         </span>
                       </div>
                     </div>
-                  )} */}
+                  )}
                 </div>
 
                 {/* Account Details */}
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                   <div className="space-y-3">
+                    {account.type === 'CREDIT_CARD' ?
                     <div>
                       <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
-                        <Percent className="h-4 w-4" />
-                        <span>Interest Rate</span>
+                        <Calendar className="h-4 w-4" />
+                        <span>Expiry</span>
                       </div>
                       <span className="font-medium">
-                        {account.interestRate}% APY
+                        {formatDate(account.expiryDate)}
                       </span>
                     </div>
+                    :
+                      <div>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                          <Percent className="h-4 w-4" />
+                          <span>Interest Rate</span>
+                        </div>
+                        <span className="font-medium">
+                          {account.interestRate}% APY
+                        </span>
+                      </div>
+                    }
                     
                     {account.type !== 'credit' && (
                       <div>
@@ -261,15 +229,27 @@ export default function Accounts() {
                   </div>
                   
                   <div className="space-y-3">
-                    <div>
-                      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Opened</span>
+                    {account.type === 'CREDIT_CARD' ?
+                      <div>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Issued</span>
+                        </div>
+                        <span className="font-medium">
+                          {formatDate(account.issuedAt ? account.issuedAt.substring(0, 10) : "")}
+                        </span>
                       </div>
-                      <span className="font-medium">
-                        {formatDate(account.openedAt.substring(0, 10))}
-                      </span>
-                    </div>
+                      :
+                      <div>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Opened</span>
+                        </div>
+                        <span className="font-medium">
+                          {formatDate(account.openedAt ? account.openedAt.substring(0, 10) : "")}
+                        </span>
+                      </div>
+                    }
                     
                     {account.type !== 'credit' && (
                       <div>
@@ -281,16 +261,6 @@ export default function Accounts() {
                     )}
                   </div>
                 </div>
-
-                {/* Action Buttons */}
-                {/* <div className="flex space-x-3 pt-4 border-t">
-                  <Button variant="outline" className="flex-1" onClick={navigate('/transfer')}>
-                    Transfer
-                  </Button>
-                  <Button variant="outline" className="flex-1" onClick={navigate('/transactions')}>
-                    Statements
-                  </Button>
-                </div> */}
               </CardContent>
             </Card>
           ))}
@@ -307,7 +277,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
                     {showBalances ? formatCurrency(
-                      accounts.reduce((sum, a) => sum + a.balance, 0)
+                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ?  a.balance : 0, 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Total Deposits</p>
@@ -315,7 +285,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
                     {showBalances ? formatCurrency(
-                      Math.abs(accounts.reduce((sum, a) => sum + a.monthTotalOut, 0))
+                      Math.abs(accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthTotalOut : 0, 0))
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Expenses</p>
@@ -323,7 +293,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {showBalances ? formatCurrency(
-                      accounts.reduce((sum, a) => sum + a.monthTotalIn, 0)
+                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthTotalIn : 0, 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Income</p>

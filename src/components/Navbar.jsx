@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Home, CreditCard, ArrowLeftRight, History, User, LogOut } from 'lucide-react';
+import { AppContext } from '@/context/AppContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+
+  const {setToken} = useContext(AppContext)
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -15,6 +18,11 @@ const Navbar = () => {
     { path: '/transactions', label: 'Transactions', icon: History },
     { path: '/profile', label: 'Profile', icon: User },
   ];
+
+  const handleLogout = () => {
+    setToken(null)
+    localStorage.removeItem('token')
+  }
 
   const NavLink = ({ path, label, icon: Icon, mobile = false }) => {
     const isActive = location.pathname === path;
@@ -92,7 +100,7 @@ const Navbar = () => {
                   
                   <div className="border-t pt-4">
                     <Link to="/login" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50">
+                      <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleLogout}>
                         <LogOut className="h-5 w-5 mr-3" />
                         Logout
                       </Button>
