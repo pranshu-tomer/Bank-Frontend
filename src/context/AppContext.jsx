@@ -8,43 +8,45 @@ const AppContextProvider = (props) => {
     // const currencySymbol = '₹'
     const backendUrl = import.meta.env.VITE_BACKEND_URL
 
-    // const [doctors, setDoctors] = useState([])
+    const [accounts, setAccounts] = useState([])
+    const [accountOptions, setAccountOptions] = useState([])
     const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
     // const [userData, setUserData] = useState(false)
     // const [accounts,setAccounts] = useState([])
     // const [transactions,setTransactions] = useState([])
     // const [transactionTotal,setTransactionTotal] = useState(false)
     
-    // const loadUserProfileData = async () => {
-    //     try {
-    //         const { data } = await axios.get(backendUrl + '/api/user/dashboard', {
-    //             headers: { Authorization: `Bearer ${token}` }
-    //         })
-    //         if (data?.success) {
-    //             setAccounts(data.data.accounts)
-    //             setTransactions(data.data.recentTransactions)
-    //             setUserData({
-    //                 id : data.data.userId,
-    //                 name : data.data.name,
-    //                 email : data.data.email,
-    //                 crn : data.data.crn
-    //             })
-    //             setTransactionTotal(data.data.totals)
-    //         }
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-    // }
+    const loadAccountsData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/accounts', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (data?.success) {
+                setAccounts(data.accounts)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    const loadAccountOptionsData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/accounts/options', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (data?.success) {
+                setAccountOptions(data.data)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
-    // useEffect(() => {
-    //     getDoctosData()
-    // }, [])
-
-    // useEffect(() => {
-    //     if (token) {
-    //         loadUserProfileData()
-    //     }
-    // }, [token])
+    useEffect(() => {
+        if (token) {
+            loadAccountsData()
+            loadAccountOptionsData()
+        }
+    }, [token])
 
     const value = {
         // doctors, getDoctosData,
@@ -52,7 +54,8 @@ const AppContextProvider = (props) => {
         backendUrl,
         token, setToken,
         // userData, setUserData, loadUserProfileData,
-        // accounts,setAccounts,
+        accounts,setAccounts,
+        accountOptions,setAccountOptions,
         // transactions,setTransactions,
         // transactionTotal,setTransactionTotal
     }

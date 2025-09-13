@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+// import Modal from '@/components/AccountOpen';
 import { 
   CreditCard, 
   Plus, 
@@ -11,63 +12,71 @@ import {
   TrendingUp, 
   Calendar,
   DollarSign,
-  Percent
+  Percent,
+  Building2
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AppContext } from '@/context/AppContext';
+import { useNavigate } from 'react-router-dom';
+import AccountOpen from '@/components/AccountOpen';
 
 export default function Accounts() {
-  const [showBalances, setShowBalances] = useState(true);
 
-  const accounts = [
-    {
-      id: 1,
-      name: 'Primary Checking',
-      type: 'checking',
-      balance: 12450.75,
-      accountNumber: '****1234',
-      routingNumber: '021000021',
-      interestRate: 0.01,
-      monthlyFee: 0,
-      minimumBalance: 0,
-      openDate: '2020-03-15'
-    },
-    {
-      id: 2,
-      name: 'High-Yield Savings',
-      type: 'savings',
-      balance: 25800.50,
-      accountNumber: '****5678',
-      routingNumber: '021000021',
-      interestRate: 4.5,
-      monthlyFee: 0,
-      minimumBalance: 1000,
-      openDate: '2021-06-10'
-    },
-    {
-      id: 3,
-      name: 'Emergency Fund',
-      type: 'savings',
-      balance: 8500.00,
-      accountNumber: '****9101',
-      routingNumber: '021000021',
-      interestRate: 3.8,
-      monthlyFee: 0,
-      minimumBalance: 500,
-      openDate: '2022-01-20'
-    },
-    {
-      id: 4,
-      name: 'Rewards Credit Card',
-      type: 'credit',
-      balance: -1250.30,
-      accountNumber: '****9012',
-      creditLimit: 5000,
-      availableCredit: 3749.70,
-      interestRate: 18.99,
-      minimumPayment: 35.00,
-      dueDate: '2024-02-15'
-    }
-  ];
+  const [showBalances, setShowBalances] = useState(true);
+  const { accounts } = useContext(AppContext)
+  const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false);
+
+  // const accounts = [
+  //   {
+  //     id: 1,
+  //     name: 'Primary Checking',
+  //     type: 'checking',
+  //     balance: 12450.75,
+  //     accountNumber: '****1234',
+  //     routingNumber: '021000021',
+  //     interestRate: 0.01,
+  //     monthlyFee: 0,
+  //     minimumBalance: 0,
+  //     openDate: '2020-03-15'
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'High-Yield Savings',
+  //     type: 'savings',
+  //     balance: 25800.50,
+  //     accountNumber: '****5678',
+  //     routingNumber: '021000021',
+  //     interestRate: 4.5,
+  //     monthlyFee: 0,
+  //     minimumBalance: 1000,
+  //     openDate: '2021-06-10'
+  //   },
+  //   {
+  //     id: 3,
+  //     name: 'Emergency Fund',
+  //     type: 'savings',
+  //     balance: 8500.00,
+  //     accountNumber: '****9101',
+  //     routingNumber: '021000021',
+  //     interestRate: 3.8,
+  //     monthlyFee: 0,
+  //     minimumBalance: 500,
+  //     openDate: '2022-01-20'
+  //   },
+  //   {
+  //     id: 4,
+  //     name: 'Rewards Credit Card',
+  //     type: 'credit',
+  //     balance: -1250.30,
+  //     accountNumber: '****9012',
+  //     creditLimit: 5000,
+  //     availableCredit: 3749.70,
+  //     interestRate: 18.99,
+  //     minimumPayment: 35.00,
+  //     dueDate: '2024-02-15'
+  //   }
+  // ];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -87,8 +96,8 @@ export default function Accounts() {
   const getAccountIcon = (type) => {
     const baseClasses = "w-12 h-12 rounded-full flex items-center justify-center";
     switch (type) {
-      case 'checking':
-        return <div className={`${baseClasses} bg-blue-100 text-blue-600`}><CreditCard className="h-6 w-6" /></div>;
+      case 'salary':
+        return <div className={`${baseClasses} bg-blue-100 text-blue-600`}><Building2 className="h-6 w-6" /></div>;
       case 'savings':
         return <div className={`${baseClasses} bg-green-100 text-green-600`}><TrendingUp className="h-6 w-6" /></div>;
       case 'credit':
@@ -118,32 +127,64 @@ export default function Accounts() {
               {showBalances ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               <span>{showBalances ? 'Hide' : 'Show'} Balances</span>
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
+            <AccountOpen />
+            {/* <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setIsOpen(true)}>
+              <Plus className="h-4 w-4 mr-2"/>
               Open New Account
             </Button>
+            <Modal
+              isOpen={isOpen}
+              onClose={() => setIsOpen(false)}
+              title="Open New Account"
+            >
+              <p className="text-sm text-gray-600 mb-4">
+                Select the account type you want to open:
+              </p>
+
+              <ul className="space-y-2">
+                <li>Savings Account</li>
+                <li>Checking Account</li>
+                <li>Fixed Deposit</li>
+              </ul>
+
+              <div className="mt-4 flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 rounded-md border border-gray-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => {
+                    console.log("Confirm clicked");
+                    setIsOpen(false);
+                  }}
+                >
+                  Confirm
+                </button>
+              </div>
+            </Modal> */}
+            {/* <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Apply For Credit Card
+            </Button> */}
           </div>
         </div>
 
         {/* Account Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {accounts.map((account) => (
-            <Card key={account.id} className="hover:shadow-lg transition-shadow">
+          {accounts.map((account,index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    {getAccountIcon(account.type)}
+                    {getAccountIcon(account.accountType.toLowerCase())}
                     <div>
-                      <CardTitle className="text-xl">{account.name}</CardTitle>
-                      <p className="text-sm text-gray-600 capitalize">{account.type} Account</p>
+                      <CardTitle className="text-xl">{account.accountType}</CardTitle>
+                      <p className="text-sm text-gray-600 capitalize">{account.accountType.toLowerCase()} Account</p>
                     </div>
                   </div>
-                  <Badge 
-                    variant={account.type === 'credit' ? 'destructive' : 'secondary'}
-                    className="capitalize"
-                  >
-                    {account.type}
-                  </Badge>
                 </div>
               </CardHeader>
               
@@ -152,12 +193,12 @@ export default function Accounts() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-600">
-                      {account.type === 'credit' ? 'Current Balance' : 'Available Balance'}
+                      Available Balance
                     </span>
-                    <span className="text-sm text-gray-500">{account.accountNumber}</span>
+                    <span className="text-sm text-gray-500">****{account.accountNumber.slice(-4)}</span>
                   </div>
                   <div className={`text-3xl font-bold ${
-                    account.type === 'credit' 
+                    account.type === 'credit'
                       ? account.balance < 0 ? 'text-red-600' : 'text-green-600'
                       : 'text-gray-900'
                   }`}>
@@ -165,7 +206,7 @@ export default function Accounts() {
                   </div>
                   
                   {/* Credit Card Specific Info */}
-                  {account.type === 'credit' && (
+                  {/* {account.type === 'credit' && (
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Available Credit:</span>
@@ -190,7 +231,7 @@ export default function Accounts() {
                         </span>
                       </div>
                     </div>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Account Details */}
@@ -226,7 +267,7 @@ export default function Accounts() {
                         <span>Opened</span>
                       </div>
                       <span className="font-medium">
-                        {formatDate(account.openDate || account.dueDate)}
+                        {formatDate(account.openedAt.substring(0, 10))}
                       </span>
                     </div>
                     
@@ -242,17 +283,14 @@ export default function Accounts() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3 pt-4 border-t">
-                  <Button variant="outline" className="flex-1">
-                    View Details
+                {/* <div className="flex space-x-3 pt-4 border-t">
+                  <Button variant="outline" className="flex-1" onClick={navigate('/transfer')}>
+                    Transfer
                   </Button>
-                  <Button variant="outline" className="flex-1">
-                    {account.type === 'credit' ? 'Make Payment' : 'Transfer'}
-                  </Button>
-                  <Button variant="outline" className="flex-1">
+                  <Button variant="outline" className="flex-1" onClick={navigate('/transactions')}>
                     Statements
                   </Button>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           ))}
@@ -269,7 +307,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
                     {showBalances ? formatCurrency(
-                      accounts.filter(a => a.type !== 'credit').reduce((sum, a) => sum + a.balance, 0)
+                      accounts.reduce((sum, a) => sum + a.balance, 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Total Deposits</p>
@@ -277,18 +315,18 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
                     {showBalances ? formatCurrency(
-                      Math.abs(accounts.filter(a => a.type === 'credit').reduce((sum, a) => sum + a.balance, 0))
+                      Math.abs(accounts.reduce((sum, a) => sum + a.monthTotalOut, 0))
                     ) : '••••••'}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">Total Credit Used</p>
+                  <p className="text-sm text-gray-600 mt-1">Monthly Expenses</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {showBalances ? formatCurrency(
-                      accounts.filter(a => a.type === 'credit').reduce((sum, a) => sum + (a.availableCredit || 0), 0)
+                      accounts.reduce((sum, a) => sum + a.monthTotalIn, 0)
                     ) : '••••••'}
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">Available Credit</p>
+                  <p className="text-sm text-gray-600 mt-1">Monthly Income</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-900">
