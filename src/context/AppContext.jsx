@@ -11,7 +11,7 @@ const AppContextProvider = (props) => {
     const [accounts, setAccounts] = useState([])
     const [accountOptions, setAccountOptions] = useState([])
     const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
-    // const [userData, setUserData] = useState(false)
+    const [userData, setUserData] = useState(false)
     // const [accounts,setAccounts] = useState([])
     // const [transactions,setTransactions] = useState([])
     // const [transactionTotal,setTransactionTotal] = useState(false)
@@ -40,11 +40,24 @@ const AppContextProvider = (props) => {
             console.log(error)
         }
     }
+    const loadUserData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/user', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (data?.success) {
+                setUserData(data.user)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
         if (token) {
             loadAccountsData()
             loadAccountOptionsData()
+            loadUserData()
         }
     }, [token])
 
@@ -53,11 +66,12 @@ const AppContextProvider = (props) => {
         // currencySymbol,
         backendUrl,
         token, setToken,
-        // userData, setUserData, loadUserProfileData,
+        userData, setUserData,
         accounts,setAccounts,
         accountOptions,setAccountOptions,
         // transactions,setTransactions,
         // transactionTotal,setTransactionTotal
+        loadAccountsData
     }
 
     return (

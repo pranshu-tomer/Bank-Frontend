@@ -16,13 +16,32 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AppContext } from '@/context/AppContext';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 export default function Transfer() {
-  const [transferAmount, setTransferAmount] = useState('');
-  const [fromAccount, setFromAccount] = useState('');
-  const [toAccount, setToAccount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const { accounts,backendUrl,token,userData,loadAccountsData } = useContext(AppContext);
+
+  const [formData,setFormData] = useState({
+    fromAccount: '',
+    toAccount: '',
+    toAccountName: '',
+    amount: 0,
+    description: '',
+    receiverIdentifier: ''
+  })
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const myAccounts = [
     { id: 'checking', name: 'Primary Checking', balance: 12450.75, number: '****1234' },
@@ -57,12 +76,18 @@ export default function Transfer() {
     }
   ];
 
+  const types = ['Deposit','Withdrawal','Transfer','Bill','Fee','Shopping','Subscription','Food','Intrest','Bank_Charge']
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
   };
+
+  function getRandomIndex(arr) {
+    return Math.floor(Math.random() * arr.length);
+  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -75,16 +100,110 @@ export default function Transfer() {
   const handleTransfer = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
+
+    try{
+        const { data } = await axios.post(backendUrl + '/api/transfer/receiver',
+        {   
+          fromAccountNumber: formData.fromAccount,
+          receiverIdentifier: formData.receiverIdentifier,
+          receiverName: formData.toAccountName,     
+          amount: formData.amount,
+          description: formData.description,
+          type: types[getRandomIndex(types)]
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        console.log(data)
+        if(data?.success){
+            toast.success(data.message)
+        }else{
+            toast.error("Something Went Wrong ! Try Again Later")
+        }
+    }catch(e){
+        console.log(e)
+        toast.error("Somthing Went Wrong")   
+    }
     
-    // Simulate transfer processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setTransferAmount('');
-      setFromAccount('');
-      setToAccount('');
-      // Show success message
-    }, 2000);
+    setIsProcessing(false);
+    loadAccountsData()
+    resetForms()
   };
+
+  const handleSelfTransfer = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    try{
+        const { data } = await axios.post(backendUrl + '/api/transfer/account',
+        {   
+          fromAccountNumber: formData.fromAccount,
+          toAccountNumber: formData.toAccount,
+          toAccountName: userData.name,     
+          amount: formData.amount,
+          description: formData.description,
+          type: types[getRandomIndex(types)]
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        console.log(data)
+        if(data?.success){
+            toast.success(data.message)
+        }else{
+            toast.error("Something Went Wrong ! Try Again Later")
+        }
+    }catch(e){
+        console.log(e)
+        toast.error("Somthing Went Wrong")   
+    }
+    
+    setIsProcessing(false);
+    loadAccountsData()
+    resetForms()
+  };
+
+  const handleAccountTransfer = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    try{
+        const { data } = await axios.post(backendUrl + '/api/transfer/account',
+        {   
+          fromAccountNumber: formData.fromAccount,
+          toAccountNumber: formData.toAccount,
+          toAccountName: formData.toAccountName,     
+          amount: formData.amount,
+          description: formData.description,
+          type: types[getRandomIndex(types)]
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        console.log(data)
+        if(data?.success){
+            toast.success(data.message)
+        }else{
+            toast.error("Something Went Wrong ! Try Again Later")
+        }
+    }catch(e){
+        console.log(e)
+        toast.error("Somthing Went Wrong")   
+    }
+    setIsProcessing(false);
+    loadAccountsData()
+    resetForms()
+  };
+
+  const resetForms = () => {
+    setFormData({
+      fromAccount: '',
+      toAccount: '',
+      toAccountName: '',
+      amount: 0,
+      description: '',
+      receiverIdentifier: ''
+    })
+  }
 
   const getAccountById = (id) => {
     return myAccounts.find(account => account.id === id);
@@ -124,16 +243,22 @@ export default function Transfer() {
                     <form onSubmit={handleTransfer} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="fromAccount">From Account</Label>
-                          <Select value={fromAccount} onValueChange={setFromAccount}>
+                          <Label>From Account</Label>
+                          <Select
+                            name="fromAccount"
+                            value={formData.fromAccount ?? ""}
+                            onValueChange={(value) =>
+                              setFormData(prev => ({ ...prev, fromAccount: value }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select source account" />
                             </SelectTrigger>
                             <SelectContent>
-                              {myAccounts.map((account) => (
-                                <SelectItem key={account.id} value={account.id}>
+                              {accounts.filter((account) => account.type !== 'CREDIT_CARD').map((account) => (
+                                <SelectItem key={account.number} value={account.number}>
                                   <div className="flex items-center justify-between w-full">
-                                    <span>{account.name}</span>
+                                    <span>{account.type}</span>
                                     <span className="text-sm text-gray-500 ml-2">
                                       {formatCurrency(account.balance)}
                                     </span>
@@ -142,24 +267,30 @@ export default function Transfer() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {fromAccount && (
+                          {formData.fromAccount && (
                             <p className="text-sm text-gray-600">
-                              Available: {formatCurrency(getAccountById(fromAccount)?.balance || 0)}
+                              Available: {formatCurrency(getAccountById(formData.fromAccount)?.balance || 0)}
                             </p>
                           )}
                         </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="toAccount">To Account</Label>
-                          <Select value={toAccount} onValueChange={setToAccount}>
+                          <Select
+                            name="toAccount"
+                            value={formData.toAccount ?? ""}
+                            onValueChange={(value) =>
+                              setFormData(prev => ({ ...prev, toAccount: value }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="Select destination account" />
                             </SelectTrigger>
                             <SelectContent>
-                              {myAccounts.filter(account => account.id !== fromAccount).map((account) => (
-                                <SelectItem key={account.id} value={account.id}>
+                              {accounts.filter(account => account.number !== formData.fromAccount).map((account) => (
+                                <SelectItem key={account.number} value={account.number}>
                                   <div className="flex items-center justify-between w-full">
-                                    <span>{account.name}</span>
+                                    <span>{account.type}</span>
                                     <span className="text-sm text-gray-500 ml-2">
                                       {account.number}
                                     </span>
@@ -178,10 +309,11 @@ export default function Transfer() {
                           <Input
                             id="amount"
                             type="number"
+                            name="amount"
                             step="0.01"
                             placeholder="0.00"
-                            value={transferAmount}
-                            onChange={(e) => setTransferAmount(e.target.value)}
+                            value={formData.amount}
+                            onChange={handleInputChange}
                             className="pl-8"
                             required
                           />
@@ -194,6 +326,9 @@ export default function Transfer() {
                           id="memo"
                           placeholder="Add a note for this transfer..."
                           rows={3}
+                          name="description"
+                          value={formData.description}
+                          onChange={handleInputChange}
                         />
                       </div>
 
@@ -212,7 +347,8 @@ export default function Transfer() {
                       <Button 
                         type="submit" 
                         className="w-full bg-blue-600 hover:bg-blue-700"
-                        disabled={isProcessing || !fromAccount || !toAccount || !transferAmount}
+                        disabled={isProcessing || !formData.fromAccount || !formData.toAccount || !formData.amount}
+                        onClick={handleSelfTransfer}
                       >
                         {isProcessing ? 'Processing Transfer...' : 'Transfer Money'}
                       </Button>
@@ -223,40 +359,35 @@ export default function Transfer() {
                   <TabsContent value="external" className="mt-6">
                     <form className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="fromAccountExt">From Account</Label>
-                        <Select>
+                        <Label>From Account</Label>
+                        <Select
+                          name="fromAccount"
+                          value={formData.fromAccount ?? ""}
+                          onValueChange={(value) =>
+                            setFormData(prev => ({ ...prev, fromAccount: value }))
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select source account" />
                           </SelectTrigger>
                           <SelectContent>
-                            {myAccounts.map((account) => (
-                              <SelectItem key={account.id} value={account.id}>
-                                {account.name} - {formatCurrency(account.balance)}
+                            {accounts.filter((account) => account.type !== 'CREDIT_CARD').map((account) => (
+                              <SelectItem key={account.number} value={account.number}>
+                                {account.type}  {formatCurrency(account.balance)}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="bankName">Bank Name</Label>
-                          <Input id="bankName" placeholder="Enter bank name" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="routingNumber">Routing Number</Label>
-                          <Input id="routingNumber" placeholder="123456789" />
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
                         <Label htmlFor="accountNumber">Account Number</Label>
-                        <Input id="accountNumber" placeholder="Enter account number" />
+                        <Input id="accountNumber" placeholder="Enter account number" name="toAccount" onChange={handleInputChange} value={formData.toAccount}/>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="recipientName">Recipient Name</Label>
-                        <Input id="recipientName" placeholder="Enter recipient's full name" />
+                        <Input id="recipientName" placeholder="Enter recipient's full name" name="toAccountName" onChange={handleInputChange} value={formData.toAccountName}/>
                       </div>
 
                       <div className="space-y-2">
@@ -269,8 +400,23 @@ export default function Transfer() {
                             step="0.01"
                             placeholder="0.00"
                             className="pl-8"
+                            name="amount"
+                            value={formData.amount}
+                            onChange={handleInputChange}
                           />
                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="message">Message</Label>
+                        <Textarea
+                          id="message"
+                          placeholder="What's this for?"
+                          rows={3}
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          name="description"
+                        />
                       </div>
 
                       <div className="bg-yellow-50 p-4 rounded-lg">
@@ -285,7 +431,7 @@ export default function Transfer() {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleAccountTransfer}>
                         Schedule Transfer
                       </Button>
                     </form>
@@ -296,14 +442,20 @@ export default function Transfer() {
                     <form className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="fromAccountP2P">From Account</Label>
-                        <Select>
+                        <Select
+                          name="fromAccount"
+                          value={formData.fromAccount ?? ""}
+                          onValueChange={(value) =>
+                            setFormData(prev => ({ ...prev, fromAccount: value }))
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select source account" />
                           </SelectTrigger>
                           <SelectContent>
-                            {myAccounts.map((account) => (
-                              <SelectItem key={account.id} value={account.id}>
-                                {account.name} - {formatCurrency(account.balance)}
+                            {accounts.map((account) => (
+                              <SelectItem key={account.number} value={account.number}>
+                                {account.type} {formatCurrency(account.type !== 'CREDIT_CARD' ? account.balance : (account.creditLimit - account.creditUsed))}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -314,8 +466,16 @@ export default function Transfer() {
                         <Label htmlFor="recipientContact">Send To</Label>
                         <Input 
                           id="recipientContact" 
-                          placeholder="Email address or phone number" 
+                          placeholder="CRN or Email address" 
+                          name="receiverIdentifier"
+                          value={formData.receiverIdentifier}
+                          onChange={handleInputChange}
                         />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="recipientName">Recipient Name</Label>
+                        <Input id="recipientName" placeholder="Enter recipient's full name" name="toAccountName" onChange={handleInputChange} value={formData.toAccountName}/>
                       </div>
 
                       <div className="space-y-2">
@@ -328,6 +488,9 @@ export default function Transfer() {
                             step="0.01"
                             placeholder="0.00"
                             className="pl-8"
+                            value={formData.amount}
+                            onChange={handleInputChange}
+                            name="amount"
                           />
                         </div>
                       </div>
@@ -338,6 +501,9 @@ export default function Transfer() {
                           id="message"
                           placeholder="What's this for?"
                           rows={3}
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          name="description"
                         />
                       </div>
 
@@ -353,7 +519,7 @@ export default function Transfer() {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleTransfer}>
                         Send Money
                       </Button>
                     </form>
