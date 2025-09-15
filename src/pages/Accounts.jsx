@@ -285,7 +285,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
                     {showBalances ? formatCurrency(
-                      Math.abs(accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthTotalOut : 0, 0))
+                      Math.abs(accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthOut : 0, 0))
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Expenses</p>
@@ -293,7 +293,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {showBalances ? formatCurrency(
-                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthTotalIn : 0, 0)
+                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthIn : 0, 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Income</p>

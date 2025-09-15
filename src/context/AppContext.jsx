@@ -12,8 +12,8 @@ const AppContextProvider = (props) => {
     const [accountOptions, setAccountOptions] = useState([])
     const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
     const [userData, setUserData] = useState(false)
+    const [transactions,setTransactions] = useState([])
     // const [accounts,setAccounts] = useState([])
-    // const [transactions,setTransactions] = useState([])
     // const [transactionTotal,setTransactionTotal] = useState(false)
     
     const loadAccountsData = async () => {
@@ -52,12 +52,25 @@ const AppContextProvider = (props) => {
             console.log(error)
         }
     }
+    const loadTransactionData = async () => {
+        try {
+            const { data } = await axios.get(backendUrl + '/api/transactions?size=10', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (data?.success) {
+                setTransactions(data.transactions)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
         if (token) {
             loadAccountsData()
             loadAccountOptionsData()
             loadUserData()
+            loadTransactionData()
         }
     }, [token])
 
@@ -69,7 +82,7 @@ const AppContextProvider = (props) => {
         userData, setUserData,
         accounts,setAccounts,
         accountOptions,setAccountOptions,
-        // transactions,setTransactions,
+        transactions,setTransactions,
         // transactionTotal,setTransactionTotal
         loadAccountsData
     }

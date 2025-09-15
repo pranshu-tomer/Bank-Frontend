@@ -24,7 +24,7 @@ import axios from 'axios';
 export default function Transfer() {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { accounts,backendUrl,token,userData,loadAccountsData } = useContext(AppContext);
+  const { accounts,backendUrl,token,userData,loadAccountsData,transactions } = useContext(AppContext);
 
   const [formData,setFormData] = useState({
     fromAccount: '',
@@ -532,7 +532,7 @@ export default function Transfer() {
           {/* Recent Transfers & Quick Actions */}
           <div className="space-y-6">
             {/* Quick Transfer Amounts */}
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Quick Transfer</CardTitle>
               </CardHeader>
@@ -550,7 +550,7 @@ export default function Transfer() {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Recent Transfers */}
             <Card>
@@ -559,7 +559,7 @@ export default function Transfer() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentTransfers.map((transfer) => (
+                  {transactions.filter((transaction) => transaction.direction === 'DEBIT').slice(0,5).map((transfer) => (
                     <div key={transfer.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -570,9 +570,9 @@ export default function Transfer() {
                             {formatCurrency(transfer.amount)}
                           </p>
                           <p className="text-xs text-gray-600">
-                            {transfer.from} → {transfer.to}
+                            {transfer.senderName} → {transfer.receiverName}
                           </p>
-                          <p className="text-xs text-gray-500">{formatDate(transfer.date)}</p>
+                          <p className="text-xs text-gray-500">{formatDate(transfer.executedAt.split('T')[0])}</p>
                         </div>
                       </div>
                       <Badge 

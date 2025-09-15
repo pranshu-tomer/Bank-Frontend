@@ -16,128 +16,20 @@ import {
   ShoppingCart,
   Car,
   Home,
+  Coins,
+  ArrowLeftRight,
   Utensils,
+  PiggyBank,
   Coffee
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AppContext } from '@/context/AppContext';
 
 export default function Transactions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAccount, setFilterAccount] = useState('all');
   const [filterType, setFilterType] = useState('all');
-
-  const transactions = [
-    {
-      id: 1,
-      date: '2024-01-15',
-      description: 'Whole Foods Market',
-      category: 'Groceries',
-      account: 'Checking',
-      amount: -85.50,
-      type: 'debit',
-      status: 'completed',
-      icon: ShoppingCart
-    },
-    {
-      id: 2,
-      date: '2024-01-15',
-      description: 'Salary Deposit - TechCorp Inc.',
-      category: 'Income',
-      account: 'Checking',
-      amount: 3200.00,
-      type: 'credit',
-      status: 'completed',
-      icon: Building2
-    },
-    {
-      id: 3,
-      date: '2024-01-14',
-      description: 'Netflix Subscription',
-      category: 'Entertainment',
-      account: 'Credit Card',
-      amount: -15.99,
-      type: 'debit',
-      status: 'completed',
-      icon: Coffee
-    },
-    {
-      id: 4,
-      date: '2024-01-14',
-      description: 'ATM Withdrawal - Chase Bank',
-      category: 'Cash',
-      account: 'Checking',
-      amount: -100.00,
-      type: 'debit',
-      status: 'completed',
-      icon: DollarSign
-    },
-    {
-      id: 5,
-      date: '2024-01-13',
-      description: 'Transfer from Savings',
-      category: 'Transfer',
-      account: 'Checking',
-      amount: 500.00,
-      type: 'credit',
-      status: 'completed',
-      icon: ArrowDownRight
-    },
-    {
-      id: 6,
-      date: '2024-01-13',
-      description: 'Shell Gas Station',
-      category: 'Transportation',
-      account: 'Credit Card',
-      amount: -45.20,
-      type: 'debit',
-      status: 'completed',
-      icon: Car
-    },
-    {
-      id: 7,
-      date: '2024-01-12',
-      description: 'Mortgage Payment',
-      category: 'Housing',
-      account: 'Checking',
-      amount: -1850.00,
-      type: 'debit',
-      status: 'completed',
-      icon: Home
-    },
-    {
-      id: 8,
-      date: '2024-01-12',
-      description: 'Starbucks Coffee',
-      category: 'Food & Dining',
-      account: 'Credit Card',
-      amount: -6.75,
-      type: 'debit',
-      status: 'completed',
-      icon: Utensils
-    },
-    {
-      id: 9,
-      date: '2024-01-11',
-      description: 'Amazon Purchase',
-      category: 'Shopping',
-      account: 'Credit Card',
-      amount: -127.99,
-      type: 'debit',
-      status: 'pending',
-      icon: ShoppingCart
-    },
-    {
-      id: 10,
-      date: '2024-01-11',
-      description: 'Interest Payment - Savings',
-      category: 'Interest',
-      account: 'Savings',
-      amount: 12.50,
-      type: 'credit',
-      status: 'completed',
-      icon: DollarSign
-    }
-  ];
+  const {accounts,transactions} = useContext(AppContext)
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -155,51 +47,79 @@ export default function Transactions() {
   };
 
   const colors = {
-  'Groceries': 'bg-green-100 text-green-800',
-  'Income': 'bg-blue-100 text-blue-800',
-  'Entertainment': 'bg-purple-100 text-purple-800',
-  'Cash': 'bg-gray-100 text-gray-800',
+  'Bill': 'bg-green-100 text-green-800',
+  'Deposit': 'bg-blue-100 text-blue-800',
+  'Subscription': 'bg-purple-100 text-purple-800',
+  'Withdrawal': 'bg-gray-100 text-gray-800',
   'Transfer': 'bg-orange-100 text-orange-800',
-  'Transportation': 'bg-red-100 text-red-800',
+  'Fee': 'bg-red-100 text-red-800',
   'Housing': 'bg-indigo-100 text-indigo-800',
-  'Food & Dining': 'bg-yellow-100 text-yellow-800',
+  'Food': 'bg-yellow-100 text-yellow-800',
   'Shopping': 'bg-pink-100 text-pink-800',
   'Interest': 'bg-emerald-100 text-emerald-800'
 };
+
+const icons = {
+  'Deposit': 'Coins',
+  'Withdrawal': '',
+  '': '',
+  'Bill': '',
+  'Fee': 'Car',
+  '': 'ShoppingCart',
+  'Subscription': 'Calendar',
+  'Food': 'Coffee',
+  'Intrest': 'PiggyBank',
+  'Bank_Charge': 'Building2'
+}
+
+const getIcon = (type,direction) => {
+  switch(type){
+    case 'Deposit':
+      return <Coins className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Withdrawal':
+      return <DollarSign className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Transfer':
+      return <ArrowLeftRight className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Bill':
+      return <Utensils className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Fee':
+      return <Car className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Shopping':
+      return <ShoppingCart className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Food':
+      return <Coffee className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Intrest':
+      return <PiggyBank className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+    case 'Bank_Charge':
+      return <Building2 className={`h-6 w-6 ${direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}/>
+  }
+}
+  
 
 const getCategoryColor = (category) => {
   return colors[category] || 'bg-gray-100 text-gray-800';
 };
 
-
-
-//   const getCategoryColor = (category) => {
-//     const colors[key]  = {
-//       'Groceries': 'bg-green-100 text-green-800',
-//       'Income': 'bg-blue-100 text-blue-800',
-//       'Entertainment': 'bg-purple-100 text-purple-800',
-//       'Cash': 'bg-gray-100 text-gray-800',
-//       'Transfer': 'bg-orange-100 text-orange-800',
-//       'Transportation': 'bg-red-100 text-red-800',
-//       'Housing': 'bg-indigo-100 text-indigo-800',
-//       'Food & Dining': 'bg-yellow-100 text-yellow-800',
-//       'Shopping': 'bg-pink-100 text-pink-800',
-//       'Interest': 'bg-emerald-100 text-emerald-800'
-//     };
-//     return colors[category] || 'bg-gray-100 text-gray-800';
-//   };
-
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAccount = filterAccount === 'all' || transaction.account === filterAccount;
-    const matchesType = filterType === 'all' || transaction.type === filterType;
+                         transaction.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.receiverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.type.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = filterType === 'all' || transaction.direction === filterType;
+
+
+    const matchesAccount = filterAccount === 'all' || 
+    ((transaction.direction === 'CREDIT') ? transaction.toAccountNumber === filterAccount : transaction.fromAccountNumber === filterAccount);
     
     return matchesSearch && matchesAccount && matchesType;
   });
 
-  const totalIncome = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const totalIncome = accounts.reduce((sum, a) => {
+    return sum + ((a.type !== 'CREDIT_CARD') ? a.monthIn : 0)
+  },0)
+  const totalExpenses = accounts.reduce((sum, a) => {
+    return sum + ((a.type !== 'CREDIT_CARD') ? a.monthOut : 0)
+  },0)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -212,10 +132,10 @@ const getCategoryColor = (category) => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Transaction History</h1>
             <p className="text-gray-600">Track and manage all your financial transactions</p>
           </div>
-          <Button className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700">
+          {/* <Button className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700">
             <Download className="h-4 w-4 mr-2" />
             Export Transactions
-          </Button>
+          </Button> */}
         </div>
 
         {/* Summary Cards */}
@@ -224,8 +144,10 @@ const getCategoryColor = (category) => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Income</p>
-                  <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Monthly Income</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatCurrency(totalIncome)}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                   <ArrowDownRight className="h-6 w-6 text-green-600" />
@@ -238,8 +160,10 @@ const getCategoryColor = (category) => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Expenses</p>
-                  <p className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</p>
+                  <p className="text-sm font-medium text-gray-600">Total Monthly Expenses</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {formatCurrency(Math.abs(totalExpenses))}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <ArrowUpRight className="h-6 w-6 text-red-600" />
@@ -286,9 +210,11 @@ const getCategoryColor = (category) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Accounts</SelectItem>
-                  <SelectItem value="Checking">Checking</SelectItem>
-                  <SelectItem value="Savings">Savings</SelectItem>
-                  <SelectItem value="Credit Card">Credit Card</SelectItem>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.number} value={account.number}>
+                      {account.type}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Select value={filterType} onValueChange={setFilterType}>
@@ -297,8 +223,8 @@ const getCategoryColor = (category) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="credit">Income</SelectItem>
-                  <SelectItem value="debit">Expenses</SelectItem>
+                  <SelectItem value="CREDIT">Income</SelectItem>
+                  <SelectItem value="DEBIT">Expenses</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -319,17 +245,15 @@ const getCategoryColor = (category) => {
                 <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex items-center space-x-4">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
+                      transaction.direction === 'CREDIT' ? 'bg-green-100' : 'bg-red-100'
                     }`}>
-                      <transaction.icon className={`h-6 w-6 ${
-                        transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                      }`} />
+                      {getIcon(transaction.type,transaction.direction)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-medium text-gray-900">{transaction.description}</h3>
+                        <h3 className="font-medium text-gray-900">{(transaction.direction === 'CREDIT') ? transaction.senderName : transaction.receiverName}</h3>
                         <Badge 
-                          variant={transaction.status === 'completed' ? 'secondary' : 'outline'}
+                          variant={transaction.status === 'COMPLETED' ? 'secondary' : 'outline'}
                           className="text-xs"
                         >
                           {transaction.status}
@@ -338,20 +262,20 @@ const getCategoryColor = (category) => {
                       <div className="flex items-center space-x-4 text-sm text-gray-600">
                         <span className="flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
-                          {formatDate(transaction.date)}
+                          {formatDate(transaction.executedAt.split('T')[0])}
                         </span>
-                        <span>{transaction.account}</span>
-                        <Badge className={`${getCategoryColor(transaction.category)} text-xs`}>
-                          {transaction.category}
+                        <span>****{transaction.toAccountNumber.slice(-4)}</span>
+                        <Badge className={`${getCategoryColor(transaction.type)} text-xs`}>
+                          {transaction.type}
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className={`text-lg font-semibold ${
-                      transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                      transaction.direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {transaction.amount >= 0 ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      {transaction.direction === 'CREDIT' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </p>
                   </div>
                 </div>
