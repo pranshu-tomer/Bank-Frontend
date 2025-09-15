@@ -13,25 +13,18 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AppContext } from '@/context/AppContext';
 
 export default function Dashboard() {
   const [showBalance, setShowBalance] = useState(true);
-  const navigate = useNavigate()
-  const accounts = [
-    { id: 1, name: 'Checking Account', balance: 12450.75, type: 'checking', number: '****1234' },
-    { id: 2, name: 'Savings Account', balance: 25800.50, type: 'savings', number: '****5678' },
-    { id: 3, name: 'Credit Card', balance: -1250.30, type: 'credit', number: '****9012', limit: 5000 }
-  ];
 
-  const recentTransactions = [
-    { id: 1, description: 'Grocery Store', amount: -85.50, date: '2024-01-15', type: 'debit' },
-    { id: 2, description: 'Salary Deposit', amount: 3200.00, date: '2024-01-15', type: 'credit' },
-    { id: 3, description: 'Netflix Subscription', amount: -15.99, date: '2024-01-14', type: 'debit' },
-    { id: 4, description: 'ATM Withdrawal', amount: -100.00, date: '2024-01-14', type: 'debit' },
-    { id: 5, description: 'Online Transfer', amount: 500.00, date: '2024-01-13', type: 'credit' }
-  ];
+  const {userData, accounts , transactions} = useContext(AppContext)
+
+  console.log(accounts)
+
+  const navigate = useNavigate()
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -52,7 +45,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, John!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {userData.firstName}</h1>
           <p className="text-gray-600">Here's what's happening with your accounts today.</p>
         </div>
 
@@ -72,7 +65,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {showBalance ? formatCurrency(totalBalance) : '••••••'}
+                {showBalance ? 
+                  formatCurrency(accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ?  a.balance : 0), 0)) 
+                : 
+                  '••••••'
+                }
               </div>
               <p className="text-xs opacity-90 mt-1">
                 <TrendingUp className="inline h-3 w-3 mr-1" />
@@ -88,7 +85,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {showBalance ? '$3,200.00' : '••••••'}
+                {showBalance ? 
+                  formatCurrency(accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ? a.monthIn : 0), 0))
+                : 
+                  '••••••'
+                }
               </div>
               <p className="text-xs text-gray-600 mt-1">
                 <TrendingUp className="inline h-3 w-3 mr-1" />
@@ -104,7 +105,11 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {showBalance ? '$1,847.30' : '••••••'}
+                {showBalance ? 
+                  formatCurrency(Math.abs(accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ? a.monthOut : 0), 0)))
+                : 
+                  '••••••'
+                }
               </div>
               <p className="text-xs text-gray-600 mt-1">
                 <TrendingDown className="inline h-3 w-3 mr-1" />
@@ -136,23 +141,23 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {accounts.map((account) => (
-                    <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div key={account.number} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                       <div className="flex items-center space-x-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          account.type === 'checking' ? 'bg-blue-100 text-blue-600' :
-                          account.type === 'savings' ? 'bg-green-100 text-green-600' :
+                          account.type === 'CURRENT' ? 'bg-blue-100 text-blue-600' :
+                          account.type === 'SAVINGS' ? 'bg-green-100 text-green-600' :
                           'bg-purple-100 text-purple-600'
                         }`}>
                           <CreditCard className="h-5 w-5" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{account.name}</h3>
+                          <h3 className="font-medium text-gray-900">{account.type}</h3>
                           <p className="text-sm text-gray-600">{account.number}</p>
-                          {account.type === 'credit' && (
+                          {/* {account.type === 'credit' && (
                             <p className="text-xs text-gray-500">
                               Limit: {formatCurrency(account.limit)}
                             </p>
-                          )}
+                          )} */}
                         </div>
                       </div>
                       <div className="text-right">
@@ -161,9 +166,12 @@ export default function Dashboard() {
                         }`}>
                           {showBalance ? formatCurrency(account.balance) : '••••••'}
                         </p>
-                        <Badge variant={account.type === 'credit' ? 'destructive' : 'secondary'} className="text-xs">
-                          {account.type}
-                        </Badge>
+                        {
+                          account.primaryAccount &&
+                          <Badge className="text-xs bg-green-100 text-green-600">
+                            Primary
+                          </Badge>
+                        }
                       </div>
                     </div>
                   ))}
@@ -180,27 +188,27 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentTransactions.map((transaction) => (
+                  {transactions.filter((t,index) => index < 5).map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
+                          transaction.direction === 'CREDIT' ? 'bg-green-100' : 'bg-red-100'
                         }`}>
-                          {transaction.type === 'credit' ? (
+                          {transaction.direction === 'CREDIT' ? (
                             <ArrowDownRight className="h-4 w-4 text-green-600" />
                           ) : (
                             <ArrowUpRight className="h-4 w-4 text-red-600" />
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{transaction.description}</p>
-                          <p className="text-xs text-gray-600">{transaction.date}</p>
+                          <p className="text-sm font-medium text-gray-900">{(transaction.direction === 'CREDIT') ? transaction.senderName : transaction.receiverName}</p>
+                          <p className="text-xs text-gray-600">{transaction.executedAt.split('T')[0]}</p>
                         </div>
                       </div>
                       <p className={`text-sm font-medium ${
-                        transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                        transaction.direction === 'CREDIT' ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                        {transaction.direction === 'CREDIT' ? '+' : ''}{formatCurrency(transaction.amount)}
                       </p>
                     </div>
                   ))}
@@ -214,14 +222,14 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button className="h-20 flex-col space-y-2 bg-blue-600 hover:bg-blue-700">
+                <Button className="h-20 flex-col space-y-2 bg-blue-600 hover:bg-blue-700" onClick={() => navigate('/transfer')}>
                   <ArrowUpRight className="h-5 w-5" />
                   <span>Transfer Money</span>
                 </Button>
@@ -240,7 +248,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </div>
   );

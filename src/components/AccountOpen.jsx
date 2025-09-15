@@ -99,7 +99,7 @@ export default function AccountOpen() {
           <>
             <p className="text-sm text-gray-600 mb-4">Select the account type you want to open:</p>
             <div className="grid grid-cols-1 gap-3">
-              {accountOptions.map((acct) => (
+              {accountOptions.filter((account) => account.type !== 'CREDIT_CARD').map((acct) => (
                 <button
                   key={acct.type}
                   onClick={() => openDetails(acct.type)}

@@ -22,58 +22,58 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
+import { AppContext } from '@/context/AppContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import ChangePassword from '@/components/PasswordChange';
+
 
 export default function Profile() {
   const [showAccountNumbers, setShowAccountNumbers] = useState(false);
-  const [notifications, setNotifications] = useState({
-    email: true,
-    sms: true,
-    push: false,
-    marketing: false
-  });
+  const [isLoading,setIsLoading] = useState(false)
 
-  const userInfo = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@email.com',
-    phone: '+1 (555) 123-4567',
-    address: {
-      street: '123 Main Street',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001'
-    },
-    memberSince: '2020-03-15',
-    accountStatus: 'verified'
+  const [isTfa,setIsTfa] = useState(false)
+  const [isLoginAlert,setIsLoginAlert] = useState(false)
+
+  const {userData,token,backendUrl,accounts} = useContext(AppContext)
+
+
+  const [formData,setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    street: "",
+    state: "",
+    city: "",
+    pincode: ""
+  })
+
+  useEffect(() => {
+  if (userData) {
+    setFormData({
+      firstName: userData.firstName || "",
+      lastName: userData.lastName || "",
+      email: userData.email || "",
+      phone: userData.phone || "",
+      street: userData?.address?.street || "",
+      state: userData?.address?.state || "",
+      city: userData?.address?.city || "",
+      pincode: userData?.address?.pincode || ""
+    });
+    setIsTfa(userData.tfa)
+    setIsLoginAlert(userData.loginAlert)
+  }
+}, [userData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
-
-  const securitySettings = [
-    {
-      title: 'Two-Factor Authentication',
-      description: 'Add an extra layer of security to your account',
-      enabled: true,
-      type: 'security'
-    },
-    {
-      title: 'Login Alerts',
-      description: 'Get notified when someone logs into your account',
-      enabled: true,
-      type: 'security'
-    },
-    {
-      title: 'Transaction Alerts',
-      description: 'Receive alerts for transactions over $500',
-      enabled: true,
-      type: 'security'
-    },
-    {
-      title: 'Account Statements',
-      description: 'Monthly account statements via email',
-      enabled: true,
-      type: 'notification'
-    }
-  ];
 
   const connectedAccounts = [
     { id: 1, name: 'Primary Checking', number: '****1234', type: 'checking', status: 'active' },
@@ -89,6 +89,63 @@ export default function Profile() {
       day: 'numeric'
     });
   };
+
+  const handleDataSubmit = async () => {
+    setIsLoading(true)
+    try{
+      const { data } = await axios.post(backendUrl + '/api/user/data/save', 
+      { 
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        street: formData.street,
+        state: formData.state,
+        city: formData.city,
+        pincode: formData.pincode
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (data.success) {
+        toast.success("Profile Updated Successfully !!")
+      } else {
+        toast.error("Something went wrong !! Try Again Later")
+      }
+      setIsLoading(false)
+    } catch(e){
+      toast.error("Something Went wrong !!")
+      setIsLoading(false)
+    }
+  }
+
+  const handleSecuritySubmit = async () => {
+    setIsLoading(true)
+    console.log(isTfa)
+    try{
+      const { data } = await axios.post(backendUrl + '/api/user/security/save', 
+      { 
+        tfa: isTfa,
+        loginAlert: isLoginAlert
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (data.success) {
+        toast.success("Security Updated Successfully !!")
+      } else {
+        toast.error("Something went wrong !! Try Again Later")
+      }
+      setIsLoading(false)
+    } catch(e){
+      toast.error("Something Went wrong !!")
+      setIsLoading(false)
+    }
+  }
+
+  // console.log(userData.address.street)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,20 +167,20 @@ export default function Profile() {
                   <User className="h-10 w-10 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                  {userInfo.firstName} {userInfo.lastName}
+                  {userData.firstName} {userData.lastName}
                 </h3>
-                <p className="text-gray-600 mb-2">{userInfo.email}</p>
+                <p className="text-gray-600 mb-2">{userData.email}</p>
                 <div className="flex items-center justify-center space-x-2 mb-4">
                   <Badge 
-                    variant={userInfo.accountStatus === 'verified' ? 'secondary' : 'destructive'}
+                    variant='secondary'
                     className="flex items-center space-x-1"
                   >
                     <CheckCircle className="h-3 w-3" />
-                    <span className="capitalize">{userInfo.accountStatus}</span>
+                    <span className="capitalize">Verified</span>
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Member since {formatDate(userInfo.memberSince)}
+                  Member since {formatDate(userData.createdAt)}
                 </p>
               </CardContent>
             </Card>
@@ -132,11 +189,11 @@ export default function Profile() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             <Tabs defaultValue="personal" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="personal">Personal Info</TabsTrigger>
                 <TabsTrigger value="security">Security</TabsTrigger>
                 <TabsTrigger value="accounts">Accounts</TabsTrigger>
-                <TabsTrigger value="preferences">Preferences</TabsTrigger>
+                {/* <TabsTrigger value="preferences">Preferences</TabsTrigger> */}
               </TabsList>
 
               {/* Personal Information */}
@@ -152,18 +209,35 @@ export default function Profile() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" defaultValue={userInfo.firstName} />
+                        <Input 
+                          id="firstName" 
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" defaultValue={userInfo.lastName} />
+                        <Input 
+                          id="lastName" 
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                        />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
                       <div className="flex items-center space-x-2">
-                        <Input id="email" type="email" defaultValue={userInfo.email} className="flex-1" />
+                        <Input 
+                          id="email" 
+                          type="email"  
+                          className="flex-1" 
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                        />
                         <Badge variant="secondary" className="flex items-center space-x-1">
                           <CheckCircle className="h-3 w-3" />
                           <span>Verified</span>
@@ -174,7 +248,13 @@ export default function Profile() {
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
                       <div className="flex items-center space-x-2">
-                        <Input id="phone" defaultValue={userInfo.phone} className="flex-1" />
+                        <Input 
+                          id="phone" 
+                          className="flex-1" 
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                        />
                         <Badge variant="secondary" className="flex items-center space-x-1">
                           <CheckCircle className="h-3 w-3" />
                           <span>Verified</span>
@@ -185,17 +265,37 @@ export default function Profile() {
                     <div className="space-y-4">
                       <Label>Address</Label>
                       <div className="grid grid-cols-1 gap-4">
-                        <Input placeholder="Street Address" defaultValue={userInfo.address.street} />
+                        <Input  
+                          name="street"
+                          value={formData.street}
+                          onChange={handleInputChange}
+                        />
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          <Input placeholder="City" defaultValue={userInfo.address.city} />
-                          <Input placeholder="State" defaultValue={userInfo.address.state} />
-                          <Input placeholder="ZIP Code" defaultValue={userInfo.address.zipCode} />
+                          <Input 
+                            placeholder="City" 
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
+                          />
+                          <Input 
+                            placeholder="State" 
+                            name="state"
+                            value={formData.state}
+                            onChange={handleInputChange}
+                          />
+                          <Input 
+                            placeholder="ZIP Code" 
+                            name="pincode"
+                            value={formData.pincode}
+                            onChange={handleInputChange}
+                          />
                         </div>
                       </div>
                     </div>
+                    {/* to do addressssss */}
 
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      Save Changes
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleDataSubmit} disabled={isLoading}>
+                      {isLoading ? 'Saving.....' : 'Save Changes'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -212,16 +312,26 @@ export default function Profile() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      {securitySettings.filter(setting => setting.type === 'security').map((setting, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{setting.title}</h4>
-                            <p className="text-sm text-gray-600">{setting.description}</p>
-                          </div>
-                          <Switch checked={setting.enabled} />
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
+                          <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
                         </div>
-                      ))}
+                        <Switch checked={isTfa} onCheckedChange={setIsTfa}/>
+                      </div>
                     </CardContent>
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">Login Alerts</h4>
+                          <p className="text-sm text-gray-600">Get notified when someone logs into your account</p>
+                        </div>
+                        <Switch checked={isLoginAlert} onCheckedChange={setIsLoginAlert}/>
+                      </div>
+                    </CardContent>
+                    <Button className="bg-blue-600 hover:bg-blue-700 w-[100px] mx-6 p-1" onClick={handleSecuritySubmit} disabled={isLoading}>
+                      {isLoading ? 'Saving.....' : 'Save Changes'}
+                    </Button>
                   </Card>
 
                   <Card>
@@ -237,16 +347,17 @@ export default function Profile() {
                           <h4 className="font-medium text-gray-900">Password</h4>
                           <p className="text-sm text-gray-600">Last changed 3 months ago</p>
                         </div>
-                        <Button variant="outline">Change Password</Button>
+                        <ChangePassword />
+                        {/* <Button variant="outline">Change Password</Button> */}
                       </div>
                       
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
+                      {/* <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
                           <p className="text-sm text-gray-600">SMS verification enabled</p>
                         </div>
                         <Button variant="outline">Manage 2FA</Button>
-                      </div>
+                      </div> */}
                     </CardContent>
                   </Card>
                 </div>
@@ -273,29 +384,29 @@ export default function Profile() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {connectedAccounts.map((account) => (
-                        <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {accounts.map((account) => (
+                        <div key={account.number} className="flex items-center justify-between p-4 border rounded-lg">
                           <div className="flex items-center space-x-4">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              account.type === 'checking' ? 'bg-blue-100 text-blue-600' :
-                              account.type === 'savings' ? 'bg-green-100 text-green-600' :
+                              account.type === 'SALARY' ? 'bg-blue-100 text-blue-600' :
+                              account.type === 'SAVINGS' ? 'bg-green-100 text-green-600' :
                               'bg-purple-100 text-purple-600'
                             }`}>
                               <CreditCard className="h-5 w-5" />
                             </div>
                             <div>
-                              <h4 className="font-medium text-gray-900">{account.name}</h4>
+                              <h4 className="font-medium text-gray-900">{account.type}</h4>
                               <p className="text-sm text-gray-600">
-                                {showAccountNumbers ? account.number.replace('****', '1234567890') : account.number}
+                                {showAccountNumbers ? `*******${account.number.slice(-4)}` : account.number}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
                             <Badge 
-                              variant={account.status === 'active' ? 'secondary' : 'destructive'}
+                              variant={account.status !== 'active' ? 'secondary' : 'destructive'}
                               className="capitalize"
                             >
-                              {account.status}
+                              Active
                             </Badge>
                             <Button variant="outline" size="sm">Manage</Button>
                           </div>
@@ -303,11 +414,14 @@ export default function Profile() {
                       ))}
                     </div>
                   </CardContent>
+                  <Button className="bg-blue-600 hover:bg-blue-700 w-[100px] mx-6 p-1" disabled={isLoading}>
+                    {isLoading ? 'Saving.....' : 'Save Changes'}
+                  </Button>
                 </Card>
               </TabsContent>
 
               {/* Preferences */}
-              <TabsContent value="preferences" className="mt-6">
+              {/* <TabsContent value="preferences" className="mt-6">
                 <div className="space-y-6">
                   <Card>
                     <CardHeader>
@@ -432,7 +546,7 @@ export default function Profile() {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </div>

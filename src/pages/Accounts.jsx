@@ -26,57 +26,6 @@ export default function Accounts() {
   const [showBalances, setShowBalances] = useState(true);
   const { accounts } = useContext(AppContext)
 
-  // const accounts = [
-  //   {
-  //     id: 1,
-  //     name: 'Primary Checking',
-  //     type: 'checking',
-  //     balance: 12450.75,
-  //     accountNumber: '****1234',
-  //     routingNumber: '021000021',
-  //     interestRate: 0.01,
-  //     monthlyFee: 0,
-  //     minimumBalance: 0,
-  //     openDate: '2020-03-15'
-  //   },
-  //   {
-  //     id: 2,
-  //     name: 'High-Yield Savings',
-  //     type: 'savings',
-  //     balance: 25800.50,
-  //     accountNumber: '****5678',
-  //     routingNumber: '021000021',
-  //     interestRate: 4.5,
-  //     monthlyFee: 0,
-  //     minimumBalance: 1000,
-  //     openDate: '2021-06-10'
-  //   },
-  //   {
-  //     id: 3,
-  //     name: 'Emergency Fund',
-  //     type: 'savings',
-  //     balance: 8500.00,
-  //     accountNumber: '****9101',
-  //     routingNumber: '021000021',
-  //     interestRate: 3.8,
-  //     monthlyFee: 0,
-  //     minimumBalance: 500,
-  //     openDate: '2022-01-20'
-  //   },
-  //   {
-  //     id: 4,
-  //     name: 'Rewards Credit Card',
-  //     type: 'credit',
-  //     balance: -1250.30,
-  //     accountNumber: '****9012',
-  //     creditLimit: 5000,
-  //     availableCredit: 3749.70,
-  //     interestRate: 18.99,
-  //     minimumPayment: 35.00,
-  //     dueDate: '2024-02-15'
-  //   }
-  // ];
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -277,7 +226,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
                     {showBalances ? formatCurrency(
-                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ?  a.balance : 0, 0)
+                      accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ?  a.balance : 0), 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Total Deposits</p>
@@ -285,7 +234,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
                     {showBalances ? formatCurrency(
-                      Math.abs(accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthOut : 0, 0))
+                      Math.abs(accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ? a.monthOut : 0), 0))
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Expenses</p>
@@ -293,7 +242,7 @@ export default function Accounts() {
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
                     {showBalances ? formatCurrency(
-                      accounts.reduce((sum, a) => sum + (a.type !== 'CREDIT_CARD') ? a.monthIn : 0, 0)
+                      accounts.reduce((sum, a) => sum + ((a.type !== 'CREDIT_CARD') ? a.monthIn : 0), 0)
                     ) : '••••••'}
                   </div>
                   <p className="text-sm text-gray-600 mt-1">Monthly Income</p>
