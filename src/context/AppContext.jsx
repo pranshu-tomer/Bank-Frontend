@@ -13,6 +13,7 @@ const AppContextProvider = (props) => {
     const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '')
     const [userData, setUserData] = useState({})
     const [transactions,setTransactions] = useState([])
+
     // const [accounts,setAccounts] = useState([])
     // const [transactionTotal,setTransactionTotal] = useState(false)
     

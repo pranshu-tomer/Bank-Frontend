@@ -92,31 +92,36 @@ export default function Profile() {
 
   const handleDataSubmit = async () => {
     setIsLoading(true)
-    try{
-      const { data } = await axios.post(backendUrl + '/api/user/data/save', 
-      { 
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        street: formData.street,
-        state: formData.state,
-        city: formData.city,
-        pincode: formData.pincode
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+    if(!formData.firstName || !formData.email || !formData.phone || !formData.street || !formData.state || !formData.city || !formData.pincode){
+      toast.info("Required Fields can't empty !!")
+      setIsLoading(false)
+    }else{
+      try{
+        const { data } = await axios.post(backendUrl + '/api/user/data/save', 
+        { 
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          street: formData.street,
+          state: formData.state,
+          city: formData.city,
+          pincode: formData.pincode
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        })
 
-      if (data.success) {
-        toast.success("Profile Updated Successfully !!")
-      } else {
-        toast.error("Something went wrong !! Try Again Later")
+        if (data.success) {
+          toast.success("Profile Updated Successfully !!")
+        } else {
+          toast.error("Something went wrong !! Try Again Later")
+        }
+        setIsLoading(false)
+      } catch(e){
+        toast.error(e.response?.data?.error)
+        setIsLoading(false)
       }
-      setIsLoading(false)
-    } catch(e){
-      toast.error("Something Went wrong !!")
-      setIsLoading(false)
     }
   }
 
@@ -214,6 +219,7 @@ export default function Profile() {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
@@ -237,6 +243,7 @@ export default function Profile() {
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
+                          required
                         />
                         <Badge variant="secondary" className="flex items-center space-x-1">
                           <CheckCircle className="h-3 w-3" />
@@ -254,6 +261,7 @@ export default function Profile() {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
+                          required
                         />
                         <Badge variant="secondary" className="flex items-center space-x-1">
                           <CheckCircle className="h-3 w-3" />
@@ -269,6 +277,7 @@ export default function Profile() {
                           name="street"
                           value={formData.street}
                           onChange={handleInputChange}
+                          required
                         />
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                           <Input 
@@ -276,18 +285,21 @@ export default function Profile() {
                             name="city"
                             value={formData.city}
                             onChange={handleInputChange}
+                            required
                           />
                           <Input 
                             placeholder="State" 
                             name="state"
                             value={formData.state}
                             onChange={handleInputChange}
+                            required
                           />
                           <Input 
                             placeholder="ZIP Code" 
                             name="pincode"
                             value={formData.pincode}
                             onChange={handleInputChange}
+                            required
                           />
                         </div>
                       </div>
@@ -397,7 +409,7 @@ export default function Profile() {
                             <div>
                               <h4 className="font-medium text-gray-900">{account.type}</h4>
                               <p className="text-sm text-gray-600">
-                                {showAccountNumbers ? `*******${account.number.slice(-4)}` : account.number}
+                                {showAccountNumbers ? account.number : `*******${account.number.slice(-4)}`}
                               </p>
                             </div>
                           </div>

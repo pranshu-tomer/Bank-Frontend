@@ -54,6 +54,15 @@ export default function ChangePassword() {
       toast.error("New passwords do not match");
       return;
     }
+    if(!formData.oldPassword || !formData.newPassword){
+      toast.error("Field can't be empty");
+      return;
+    }
+
+    if(formData.oldPassword === formData.newPassword){
+      toast.info("Can't use old password again");
+      return;
+    }
 
     setIsLoading(true);
     try {

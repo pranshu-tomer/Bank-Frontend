@@ -43,45 +43,12 @@ export default function Transfer() {
     }));
   };
 
-  const myAccounts = [
-    { id: 'checking', name: 'Primary Checking', balance: 12450.75, number: '****1234' },
-    { id: 'savings', name: 'High-Yield Savings', balance: 25800.50, number: '****5678' },
-    { id: 'emergency', name: 'Emergency Fund', balance: 8500.00, number: '****9101' }
-  ];
-
-  const recentTransfers = [
-    {
-      id: 1,
-      from: 'Primary Checking',
-      to: 'High-Yield Savings',
-      amount: 500.00,
-      date: '2024-01-14',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      from: 'High-Yield Savings',
-      to: 'Primary Checking',
-      amount: 200.00,
-      date: '2024-01-12',
-      status: 'completed'
-    },
-    {
-      id: 3,
-      from: 'Primary Checking',
-      to: 'Emergency Fund',
-      amount: 1000.00,
-      date: '2024-01-10',
-      status: 'completed'
-    }
-  ];
-
   const types = ['Deposit','Withdrawal','Transfer','Bill','Fee','Shopping','Subscription','Food','Intrest','Bank_Charge']
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(amount);
   };
 
@@ -121,8 +88,7 @@ export default function Transfer() {
             toast.error("Something Went Wrong ! Try Again Later")
         }
     }catch(e){
-        console.log(e)
-        toast.error("Somthing Went Wrong")   
+        toast.error(e.response.data.message)   
     }
     
     setIsProcessing(false);
@@ -130,16 +96,19 @@ export default function Transfer() {
     resetForms()
   };
 
+  
   const handleSelfTransfer = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
 
+    const fullName = userData.firstName + (userData.lastName ? ` ${userData.lastName}` : '')
+    console.log(fullName)
     try{
         const { data } = await axios.post(backendUrl + '/api/transfer/account',
         {   
           fromAccountNumber: formData.fromAccount,
           toAccountNumber: formData.toAccount,
-          toAccountName: userData.name,     
+          toAccountName: fullName,     
           amount: formData.amount,
           description: formData.description,
           type: types[getRandomIndex(types)]
@@ -154,8 +123,7 @@ export default function Transfer() {
             toast.error("Something Went Wrong ! Try Again Later")
         }
     }catch(e){
-        console.log(e)
-        toast.error("Somthing Went Wrong")   
+        toast.error(e.response.data.message)   
     }
     
     setIsProcessing(false);
@@ -186,8 +154,7 @@ export default function Transfer() {
             toast.error("Something Went Wrong ! Try Again Later")
         }
     }catch(e){
-        console.log(e)
-        toast.error("Somthing Went Wrong")   
+        toast.error(e.response.data.message)   
     }
     setIsProcessing(false);
     loadAccountsData()
@@ -206,7 +173,7 @@ export default function Transfer() {
   }
 
   const getAccountById = (id) => {
-    return myAccounts.find(account => account.id === id);
+    return accounts.find(account => account.id === id);
   };
 
   return (
@@ -255,7 +222,7 @@ export default function Transfer() {
                               <SelectValue placeholder="Select source account" />
                             </SelectTrigger>
                             <SelectContent>
-                              {accounts.filter((account) => account.type !== 'CREDIT_CARD').map((account) => (
+                              {accounts.map((account) => (
                                 <SelectItem key={account.number} value={account.number}>
                                   <div className="flex items-center justify-between w-full">
                                     <span>{account.type}</span>
@@ -267,11 +234,6 @@ export default function Transfer() {
                               ))}
                             </SelectContent>
                           </Select>
-                          {formData.fromAccount && (
-                            <p className="text-sm text-gray-600">
-                              Available: {formatCurrency(getAccountById(formData.fromAccount)?.balance || 0)}
-                            </p>
-                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -305,7 +267,7 @@ export default function Transfer() {
                       <div className="space-y-2">
                         <Label htmlFor="amount">Transfer Amount</Label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
                           <Input
                             id="amount"
                             type="number"

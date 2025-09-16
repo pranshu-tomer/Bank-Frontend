@@ -20,8 +20,9 @@ const Navbar = () => {
   ];
 
   const handleLogout = () => {
-    setToken(null)
     localStorage.removeItem('token')
+    localStorage.clear();
+    setToken(null)
   }
 
   const NavLink = ({ path, label, icon: Icon, mobile = false }) => {

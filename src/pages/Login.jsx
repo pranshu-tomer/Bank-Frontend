@@ -73,7 +73,6 @@ export default function Login() {
         crn : loginFormData.crn,
         password : loginFormData.password
       })
-
       if (data.success) {
         toast.success("Welcome Back")
         setIsLoading(false)
@@ -81,11 +80,11 @@ export default function Login() {
         localStorage.setItem('token',data.token)
         // todo : remeber me
       } else {
-        toast.error("Something went wrong !! Try Again Later")
+        toast.error(data.error)
         setIsLoading(false)
       }
     } catch(e){
-      toast.error("Something Went wrong !!")
+      toast.error(e.response.data.error)
       setIsLoading(false)
     }
     navigate('/dashboard');
@@ -112,6 +111,7 @@ export default function Login() {
         age: signupFormData.age
       })
 
+      console.log(data)
       if (data.success) {
         toast.success("Check Your Mail for Login Credentials")
         setIsLoading(false)
@@ -121,7 +121,7 @@ export default function Login() {
         setIsLoading(false)
       }
     } catch(e){
-      toast.error("Something Went wrong !!")
+      toast.error(e.response.data.error)
       setIsLoading(false)
     }
 
@@ -353,6 +353,7 @@ export default function Login() {
                         type="date"
                         value={signupFormData.dob}
                         onChange={handleInputChange}
+                        required
                       />
                     </div>
                   </div>

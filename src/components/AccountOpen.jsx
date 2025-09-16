@@ -42,7 +42,7 @@ export default function AccountOpen() {
   const [selectedId, setSelectedId] = useState(null);
   const [isLoading, setIsLoading] = useState(false)
 
-  const { accountOptions,backendUrl,token } = useContext(AppContext)
+  const { accountOptions,backendUrl,token,loadAccountsData } = useContext(AppContext)
 
   useEffect(() => {
     // reset when modal closed
@@ -73,6 +73,7 @@ export default function AccountOpen() {
 
         if(data?.success){
             toast.success("Account Created Successfully")
+            loadAccountsData()
         }else{
             toast.error("Something Went Wrong ! Try Again Later")
         }
