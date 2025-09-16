@@ -22,11 +22,12 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { AppContext } from '@/context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ChangePassword from '@/components/PasswordChange';
+import Util from '@/utils/util';
 
 
 export default function Profile() {
@@ -36,7 +37,7 @@ export default function Profile() {
   const [isTfa,setIsTfa] = useState(false)
   const [isLoginAlert,setIsLoginAlert] = useState(false)
 
-  const {userData,token,backendUrl,accounts} = useContext(AppContext)
+  const {userData,token,backendUrl,accounts,loadAccountsData} = useContext(AppContext)
 
 
   const [formData,setFormData] = useState({
@@ -74,13 +75,6 @@ export default function Profile() {
       [name]: value
     }));
   };
-
-  const connectedAccounts = [
-    { id: 1, name: 'Primary Checking', number: '****1234', type: 'checking', status: 'active' },
-    { id: 2, name: 'High-Yield Savings', number: '****5678', type: 'savings', status: 'active' },
-    { id: 3, name: 'Emergency Fund', number: '****9101', type: 'savings', status: 'active' },
-    { id: 4, name: 'Rewards Credit Card', number: '****9012', type: 'credit', status: 'active' }
-  ];
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -150,7 +144,33 @@ export default function Profile() {
     }
   }
 
-  // console.log(userData.address.street)
+  const throttledRef = useRef(null);
+
+  if (throttledRef.current === null) {
+    throttledRef.current = Util.throttle(async (number, check) => {
+      try {
+        const { data } = await axios.post(
+          backendUrl + "/api/accounts/change/txn/alert",
+          {},
+          {
+            params: { accNumber: number, value: check },
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (data?.success) {
+          toast.success("Account Setting Updated");
+          loadAccountsData();
+        }
+      } catch (e) {
+        toast.error(e?.response?.data?.message ?? "Something went wrong");
+      }
+    }, 1800);
+  }
+
+  const handleTransactionAlert = (number, check) => {
+    throttledRef.current(number, check);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -414,21 +434,19 @@ export default function Profile() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
-                            <Badge 
+                            {/* <Badge 
                               variant={account.status !== 'active' ? 'secondary' : 'destructive'}
                               className="capitalize"
                             >
                               Active
-                            </Badge>
-                            <Button variant="outline" size="sm">Manage</Button>
+                            </Badge> */}
+                            <p className="text-sm text-gray-600">Transaction Alerts</p>
+                            <Switch checked={account.transactionAlert} onCheckedChange={(checked) => handleTransactionAlert(account.number,checked)}/>
                           </div>
                         </div>
                       ))}
                     </div>
                   </CardContent>
-                  <Button className="bg-blue-600 hover:bg-blue-700 w-[100px] mx-6 p-1" disabled={isLoading}>
-                    {isLoading ? 'Saving.....' : 'Save Changes'}
-                  </Button>
                 </Card>
               </TabsContent>
 

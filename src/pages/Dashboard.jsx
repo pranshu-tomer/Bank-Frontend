@@ -50,7 +50,7 @@ export default function Dashboard() {
         </div>
 
         {/* Account Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium opacity-90">Total Balance</CardTitle>
@@ -118,7 +118,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Savings Goal</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-600" />
@@ -128,7 +128,7 @@ export default function Dashboard() {
               <Progress value={68} className="mt-2" />
               <p className="text-xs text-gray-600 mt-1">$6,800 of $10,000</p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
