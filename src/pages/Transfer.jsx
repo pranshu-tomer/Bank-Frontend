@@ -394,7 +394,7 @@ export default function Transfer() {
                       </div>
 
                       <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleAccountTransfer}>
-                        Schedule Transfer
+                        {isProcessing ? 'Processing Transfer...' : 'Transfer Money'}
                       </Button>
                     </form>
                   </TabsContent>
@@ -482,7 +482,7 @@ export default function Transfer() {
                       </div>
 
                       <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleTransfer}>
-                        Send Money
+                        {isProcessing ? 'Processing Transfer...' : 'Transfer Money'}
                       </Button>
                     </form>
                   </TabsContent>
