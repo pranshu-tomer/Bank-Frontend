@@ -124,11 +124,6 @@ export default function Login() {
       toast.error(e.response.data.error)
       setIsLoading(false)
     }
-
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   navigate('/dashboard');
-    // }, 1500);
   };
 
   return (

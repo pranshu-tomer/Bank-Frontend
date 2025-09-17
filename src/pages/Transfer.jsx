@@ -393,7 +393,9 @@ export default function Transfer() {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleAccountTransfer}>
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleAccountTransfer}
+                      disabled={isProcessing}
+                      >
                         {isProcessing ? 'Processing Transfer...' : 'Transfer Money'}
                       </Button>
                     </form>
@@ -481,7 +483,9 @@ export default function Transfer() {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleTransfer}>
+                      <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleTransfer}
+                      disabled={isProcessing}
+                      >
                         {isProcessing ? 'Processing Transfer...' : 'Transfer Money'}
                       </Button>
                     </form>
